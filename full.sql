@@ -1,0 +1,59 @@
+
+CREATE 
+TABLE 
+"Detail" 
+( 
+   "Id"  
+    INTEGER   
+      NOT 
+      NULL
+      ,
+		  "Name"
+         VARCHAR
+         (
+            26
+            ) 
+            NOT 
+            NULL
+            ,
+		  "Note"
+         VARCHAR
+         (
+            1000
+            )
+            ,
+		  "Pos" 
+         DECIMAL
+         (
+            4
+            )  
+            NOT 
+            NULL
+            ,
+		  CONSTRAINT
+         "Detail_Pk" 
+         PRIMARY
+         KEY
+          (
+             "Id"
+             )
+             ,
+		  CONSTRAINT
+         "Detail_Fk"
+          FOREIGN
+           KEY 
+          ("Pos")
+           REFERENCES
+            "Position"
+             ON
+              DELETE 
+              CASCADE
+               ( 
+                  "A"
+                  , 
+                  "D"
+                  , 
+                  "B"
+                  ) 
+                  )
+                  ;      
