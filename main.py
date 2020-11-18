@@ -60,7 +60,7 @@ def process_files_in_project(path, config_name, action):
         process_files_in_project(join(path, dir), config_name, action)
 
 if DEBUG:
-    process('full.sql', 'MyTemplate', '-f')
+    process('full.sql', 'FullFormat', '-f')
 else:
     if len(sys.argv) == 2 and sys.argv[1] == '-h' \
         or sys.argv[1] == '--help':
