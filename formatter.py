@@ -376,8 +376,8 @@ class Formatter:
             self.changing = need_changing
             if not need_changing:
                 break
-        if not need_changing:
-            self.formatted_lexer.merge_token_and_spaces()
+        #if not need_changing:
+        self.formatted_lexer.merge_token_and_spaces()
     
     def print_format_errors(self, file_name, file_with_errors):
         with open(file_name, "w") as file:
