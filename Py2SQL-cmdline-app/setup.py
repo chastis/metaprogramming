@@ -8,7 +8,7 @@ from setuptools import setup
 
 version = re.search(
     '^__version__\s*=\s*"(.*)"',
-    open('bootstrap/bootstrap.py').read(),
+    open('Py2SQL/py2sql.py').read(),
     re.M
 ).group(1)
 
@@ -19,7 +19,7 @@ setup(
     name="cmdline-Py2SQL",
     packages=["Py2SQL"],
     entry_points={
-        "console_scripts": ['Py2SQL = Py2SQL.Py2SQL:main']
+        "console_scripts": ['Py2SQL = Py2SQL.py2sql:main']
     },
     version=version,
     description="Python command line application bare bones template.",
