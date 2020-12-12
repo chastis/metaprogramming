@@ -1,0 +1,11 @@
+.DS_Store
+.idea
+dist
+build
+__pycache__
+*.log
+*.egg-info
+*.rst
+
+# Removed swap files
+.*.swp
