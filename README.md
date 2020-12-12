@@ -6,7 +6,7 @@ If you want to use this program, you should download command line utility cmdlin
 
 For establishing you need to write in your terminal:
 
-pip instal cmdline-Py2SQL
+pip install cmdline-Py2SQL
 
 ### Tutorial of app
 
