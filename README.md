@@ -8,6 +8,10 @@ For establishing you need to write in your terminal:
 
 pip install cmdline-Py2SQL
 
+Now you can write to the terminal:
+
+Py2SQL
+
 ### Tutorial of app
 
 ### Warning
