@@ -3,6 +3,17 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+.DS_Store
+.idea
+dist
+build
+__pycache__
+*.log
+*.egg-info
+
+# Removed swap files
+.*.swp
+
 # User-specific files
 *.rsuser
 *.suo
