@@ -1,0 +1,3 @@
+[console_scripts]
+Py2SQL = Py2SQL.py2sql:main
+
