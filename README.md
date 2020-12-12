@@ -1,2 +1,0 @@
-### Instruction Lab 3
-
