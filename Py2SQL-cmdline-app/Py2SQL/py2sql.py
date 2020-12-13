@@ -27,7 +27,7 @@ from Py2SQL import sql_queries
 #
 # class Garage:
 #     id_ = 1
-#     car: Car
+#     Py2SQL.htmlcar: Car
 #     def __init__(self, id_: int, car: Car):
 #         self.id = id_
 #         self.car = car
