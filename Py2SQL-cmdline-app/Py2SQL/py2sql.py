@@ -9,7 +9,10 @@ import os
 import sqlite3
 import sys
 from typing import *
+
+import Py2SQL.util_for_db as util
 from config import *
+from Py2SQL import sql_queries
 
 class Database:
     def _set_constants(self):
@@ -20,6 +23,8 @@ class Database:
         self._db_name: str = DB_FILENAME.split('.')[0]
         self._db_version: str = sqlite3.version
         self._db_sqlite_version: str = sqlite3.sqlite_version
+        self._db_engine: str = 'SQLite3: ' + self._db_version
+        self._db_size: int = self._db_get_size()
 
     def __init__(self):
         """
@@ -69,6 +74,9 @@ class Database:
         self._cursor.close()
         self._connect.close()
 
+    def _db_get_size(self) -> int:
+        return os.path.getsize(filename=DB_FILENAME) / (1024 ** 2) if os.path.exists(DB_FILENAME) else 0
+
     def _commit(self, queries: Union[Tuple, List, Set, FrozenSet, str, None]):
         """
         Функция для закрепления транзакции, для уменьшения количества строк кода.
@@ -85,7 +93,18 @@ class Database:
                 self._cursor.execute(query)
         self._connect.commit()
 
+        def get_tables(self) -> tuple:
+            self._cursor.execute(sql_queries.GET_TABLES)
+            return util.output_one_column(data=self._cursor.fetchall())
+
+        def get_table_info(self, table: str) -> list:
+            self._cursor.execute(sql_queries.get_table_info(table=table))
+            # return util.table_info(title_columns=self._cursor.description,
+            #                        data=self._cursor.fetchall())
+            return self._cursor.fetchall()
+
 
 def main():
     print("Executing Py2SQL version %s." % __version__)
-    Database()
+    with Database() as db:
+        print(db.get_table_info('asdasdasdasd'))
