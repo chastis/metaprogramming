@@ -17,10 +17,13 @@ from Py2SQL import sql_queries
 
 
 class Car:
-    def __init__(self, color: str = 'RED', number: int = 5, title: str = "BMW"):
-        self.color = color
-        self.number = number
-        self.title = title
+    # def __init__(self, color: str = 'RED', number: int = 5, title: str = "BMW"):
+    #     self.color = color
+    #     self.number = number
+    #     self.title = title
+    color = str
+    number = int
+    title = str
 
 
 class Database:
@@ -124,6 +127,23 @@ class Database:
         #                        data=self._cursor.fetchall())
         return self._cursor.fetchall()
 
+    def _get_data_from_table(self, table: str, attributes: Union[list, tuple, None]) -> List[Tuple]:
+        """
+            Данный метод создан для уменьшения кол-ва кода, он:
+                генерирует запрос на основе переданных параметров;
+                получает данные о таблице по полям, а именно: айди поля, название, тип;
+                соединяет поля с данными.
+        :param table: название таблицы
+        :param attributes: необходимые аттрибуты для поиска записей в бд
+        :return: список кортежей структуры: названеи поля, его тип, его значение
+        """
+        query: str = util.generate_sql_to_find_object(table=table,
+                                                      attributes=attributes)
+        table_fields: List[Tuple] = self.get_table_info(table=table)
+        self._execute(queries=query)
+        return handler.merge_field_info_with_value(fields_info=table_fields,
+                                                   data=self._cursor.fetchall())
+
     def find_object(self, table: str, py_object: object) -> list:
         """
             Поиск строки с эквивалетными параметрами что и у объекта
@@ -132,13 +152,7 @@ class Database:
         :return: список кортежей где 1 кортеж является информацией о одном поле
         """
         if table in self.get_tables():
-            query: str = util.generate_sql_to_find_object(table=table,
-                                                          attributes=tuple(py_object.__dict__.items()))
-            table_fields: List[Tuple] = self.get_table_info(table=table)
-            self._execute(queries=query)
-            return handler.merge_field_info_with_value(fields_info=table_fields,
-                                                       data=self._cursor.fetchall())
-
+            return self._get_data_from_table(table=table, attributes=tuple(vars(py_object).items()))
         else:
             raise Exception('Введенной таблицы не найдено.')
 
@@ -150,22 +164,31 @@ class Database:
         :return: найденные строки в формате: название стобца, тип, занчение
         """
         if table in self.get_tables():
-            query: str = util.generate_sql_to_find_object(table=table,
-                                                          attributes=tuple(attributes)[0])
-            table_fields: List[Tuple] = self.get_table_info(table=table)
-            self._execute(queries=query)
-            return handler.merge_field_info_with_value(fields_info=table_fields,
-                                                       data=self._cursor.fetchall())
+            return self._get_data_from_table(table=table, attributes=tuple(attributes)[0])
         else:
             raise Exception('Введенной таблицы не найдено.')
 
     def find_class(self, py_class):
-        pass
+        """
+                    Поиск необходимого класса
+                :param py_class: python класс
+                :return: все данные найденого класса по ячейкам
+                """
+        need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(class_=py_class)
+        tables_list: tuple = self.get_tables()
+        for table in tables_list:
+            if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+                return self._get_data_from_table(table=table, attributes=tuple())
+        else:
+            raise Exception('Таблицы с эквивалетными параметрами не найдено.')
 
 
 def main():
     print("Executing Py2SQL version %s." % __version__)
     with Database() as db:
-        print(db.find_objects_by('car', (("color", "RED"), ("number", 5))))
+        print(db.find_class(Car))
+        # print(db.find_objects_by('car', (("color", "RED"), ("number", 5))))
         # print(db.find_object('car', Car()))
         # print(db.get_table_info('asdasdasdasd'))
+
+

@@ -1,7 +1,7 @@
 GET_TABLES = """SELECT name 
                 FROM sqlite_master
                 WHERE type='table'
-                ORDER BY name;"""
+                ORDER BY name"""
 
 
 def GET_TABLE_INFO(table: str):

@@ -18,6 +18,9 @@ def generate_sql_to_find_object(table: str, attributes: tuple):
     query: str = 'SELECT * ' \
                  f'FROM `{table}` ' \
                  f'WHERE '
-    for field, value in attributes:
-        query += f'{field} = "{value}" AND '
-    return query[:-4]
+    if not attributes:
+        return query[:-6]
+    else:
+        for field, value in attributes:
+            query += f'{field} = "{value}" AND '
+        return query[:-4]
