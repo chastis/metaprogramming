@@ -60,7 +60,7 @@ class Cat:
 
         else:
             raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
-        
+
     def save_class(self, py_class):
         """
             Сохранение таблицы в БД
@@ -84,6 +84,38 @@ class Cat:
                 self._commit(queries=util.create_table(title=title_class,
                                                        attributes=need_fields))
                 return TABLE_WAS_UPDATED
+
+    def delete_object(self, py_object: object):
+        """
+            Удаление записи
+        :param py_object: объект записи
+        :return: статус удаления или контролируемая ошибка
+        """
+        need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(attributes=tuple(vars(py_object).items()),
+                                                                                object_=True)
+        tables_list: tuple = self.get_tables()
+
+        for table in tables_list:
+
+            if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+
+                try:
+                    self._execute(queries=util.check_having_in_table(table=table,
+                                                                     id_=py_object.id))
+                    id_: int = self._cursor.fetchone()[0]
+
+                except AttributeError:
+                    raise Exception(EXCEPTION_TEXT_NO_ID)
+                except (IndexError, TypeError):
+                    raise Exception(EXCEPTION_TEXT_NO_RECORD)
+
+                self._commit(queries=util.delete_object(table=table,
+                                                        row_id=id_))
+                return RECORD_WAS_DELETED
+
+        else:
+            raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
+
 
 class Database:
     def _set_constants(self):
