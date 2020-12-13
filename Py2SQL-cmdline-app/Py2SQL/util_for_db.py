@@ -5,11 +5,11 @@ from config import EXCEPTION_TEXT_CLASS_NO_ID
 
 def output_one_column(data: list) -> tuple:
     """
-            Вывод кортежа при запросе одной колонки из бд,
-            (чтоб не было кортеж в кортеже)
-        :param data:
-        :return:
-        """
+        Вывод кортежа при запросе одной колонки из бд,
+        (чтоб не было кортеж в кортеже)
+    :param data:
+    :return:
+    """
     return tuple(row[0] for row in data)
 
 
@@ -32,6 +32,7 @@ def generate_sql_to_find_object(table: str, attributes: tuple) -> str:
             else:
                 query += f'{field} = "{value}" AND '
         return query[:-4]
+
 
 def generate_save_sql_query(table: str, py_object: object, update: bool = False) -> str:
     if update:
@@ -94,4 +95,31 @@ def delete_class(table: str):
     :return: запрос на удаление
     """
     query: str = f'DROP TABLE `{table}`'
+    return query
+
+
+def create_table_with_relation(title: str, attributes: List[Tuple], parents: list):
+    """
+        Запрос на создание таблицы
+    :param title:
+    :param attributes:
+    :return:
+    """
+    for title_row, type_ in attributes:
+        if title_row.lower() == 'id':
+            break
+    else:
+        raise print(EXCEPTION_TEXT_CLASS_NO_ID)
+    if parents and str(parents[0]).find('object') < 1:
+        query: str = f'CREATE TABLE "{title}" (' + \
+                     ', '.join(f'"{title_row}" {type_}' for title_row, type_ in attributes) + \
+                     f', CONSTRAINT "{title}_{parents[0].__name__.lower()}_id_fk" FOREIGN KEY("id") REFERENCES "{title}"' \
+                     f' PRIMARY KEY("id" AUTOINCREMENT)' \
+                     ')'
+        print(query)
+    else:
+        query: str = f'CREATE TABLE "{title}" (' + \
+                     ', '.join(f'"{title_row}" {type_}' for title_row, type_ in attributes) + \
+                     f', PRIMARY KEY("id" AUTOINCREMENT)' \
+                     ')'
     return query

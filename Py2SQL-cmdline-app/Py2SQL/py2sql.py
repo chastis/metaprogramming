@@ -33,13 +33,33 @@ from Py2SQL import sql_queries
 #         self.id = id_
 #         self.car = car
 #
-#
-# class Cat:
-#     def __init__(self, id_=1, name='Барсик'):
-#         self.id = id_
-#         self.name = name
-#     id = 1
-#     name = 'барсик'
+
+
+class Lesson:
+    id = 1
+    title = 'Математика'
+    def __init__(self, id_, title):
+        self.id = id_
+        self.title = title
+
+
+class Cat:
+    def __init__(self, id_=1, name='Барсик'):
+        self.id = id_
+        self.name = name
+    id = 1
+    name = 'барсик'
+
+class test1:
+    id = 1
+
+
+class test2(test1):
+    id = 1
+
+
+class test3(test1):
+    id = 1
 
 
 class Database:
@@ -184,7 +204,8 @@ class Database:
         :param py_class: python класс
         :return: все данные найденого класса по ячейкам
         """
-        need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(attributes=tuple(vars(py_class).items()))
+        need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(attributes=tuple(vars(py_class).items()),
+                                                                                object_=True)
         tables_list: tuple = self.get_tables()
         for table in tables_list:
             if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
@@ -276,7 +297,9 @@ class Database:
         """
         if table.lower() in self.get_tables():
             handler.create_module(title_class=table,
-                                  class_=self.get_table_info(table))
+                                  class_=self.get_table_info(table),
+                                  title_module=module)
+            return MODULE_WAS_CREATED
         else:
             raise Exception(EXCEPTION_TEXT_NO_TABLE)
 
@@ -297,14 +320,14 @@ class Database:
 
                 self._execute(queries=query)
                 relations: tuple = self._cursor.fetchone()
-                if relations and table in relations:
+                if relations and children_table in relations:
                     parent_table: str = relations[0]
                     handler.create_script_with_class(title_class=children_table,
                                                      parent_class=module,
                                                      class_=self.get_table_info(children_table))
-                    return
         else:
             raise Exception(EXCEPTION_TEXT_NO_TABLE)
+        return HIERARH_WAS_CREATED_IN_PY
 
     def save_object(self, py_object: object):
         """
@@ -359,6 +382,29 @@ class Database:
                                                        attributes=need_fields))
                 return TABLE_WAS_UPDATED
 
+    def save_hierarchy(self, root_class: object):
+        all_class = set(handler.get_children(class_=root_class, clases=[]))
+        all_class = tuple(reversed(tuple(all_class) + (root_class, )))
+        for class_ in all_class:
+            need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(attributes=tuple(vars(class_).items()),
+                                                                                    object_=True)
+            tables_list: tuple = self.get_tables()
+            title_class: str = class_.__name__.lower()
+            if title_class not in tables_list:
+                self._commit(queries=util.create_table_with_relation(title=title_class,
+                                                                     attributes=need_fields,
+                                                                     parents=class_.__bases__))
+            else:
+                for table in tables_list:
+                    if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+                        continue
+                        # raise Exception(EXCEPTION_TEXT_CLASS_EXIST)
+                else:
+                    self._execute(sql_queries.DROP_TABLE(title_class))
+                    self._commit(queries=util.create_table(title=title_class,
+                                                           attributes=need_fields))
+        return HIERARH_WAS_CREATED
+
     def delete_object(self, py_object: object):
         """
             Удаление записи
@@ -396,14 +442,15 @@ class Database:
         :param py_class: класс, по которому будет удалена бд
         :return: статус удаления или контролируемая ошибка
         """
-        need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(attributes=tuple(vars(py_class).items()))
+        need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(attributes=tuple(vars(py_class).items()),
+                                                                                object_=True)
         tables_list: tuple = self.get_tables()
         title_class: str = py_class.__name__.lower()
         if title_class not in tables_list:
             raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
         else:
             for table in tables_list:
-                if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+                if set(row[1:] for row in self.get_table_info(table)) == set(need_fields) and table == title_class:
                     self._commit(queries=util.delete_class(table=table))
                     return TABLE_WAS_DELETED
             else:
@@ -436,20 +483,25 @@ def main():
     print("Executing bootstrap version %s." % __version__)
     print("List of argument strings: %s" % sys.argv[1:])
     with Database() as db:
-        # print(db.get_table_info('asdasdasdasd'))
-        # print(db.find_objects_by('car', (("color", "RED"), ("number", 5))))
-        # print(db.find_object('car', Car()))
-        # print(db.find_class(Car))
-        # print(db.find_classes_by((('color', 'str'), ('number', 'int'), ('title', 'str'))))
-        # print(db.find_hierarches())
-        # db.create_object(Cat, '1')
-        # db.create_objects('cat', 1, 2)
-        # db.save_object(Car("BLACK", 20, 'RENO'))
-        # db.save_object(Cat(22, 'test'))
-        # db.save_class(Cat)
-        # db.delete_object(Cat())
-        # db.delete_class(py_class=Car)
-        # db.delete_hierarches(Car)
-        # db.create_class('Cat', 'Cats')
-        # db.create_hierarchy(table='test1', module='help_me')
+        # print('1', db.get_table_info('asdasdasdasd'))          # получение информации о таблице
+        # print('2', db.find_objects_by('cat',                     # нахождение объектов по атрибутам
+        #                          (("name", "Бузик"), )))
+        # print('3', db.find_object('cat', Cat()))                 # поиск по объекту в БД
+        # print('4', db.find_class(Cat))                           # поиск класса по объекту
+        # print('5', db.find_classes_by((('name', 'str'),          # поиск класса по параметрам, название : тип
+        #                           ('id', 'int'), )))
+        # print('6', db.find_hierarches())                         # поиск связанных таблиц
+        # print('7', db.create_object('Cat', '1'))                 # создание питоновского ОДНОГО объекта
+        # print('8', db.create_objects('cat', 1, 2))               # создание питоновских объектов из БД
+        # print('9', db.save_object(Cat(id_=12, name='Мурзик')))   # добавление или редактирование введенного объекта
+        # print('10', db.save_class(Lesson))                       # перед приминением удалить класс из БД
+        # print('11', db.delete_object(Cat(id_=12,                   # удаление объекта по заданным параметрам
+        #                                  name='Мурзик')))
+        # print('12', db.delete_class(py_class=test3))             # удаление таблицы из БД
+        # print('13', db.delete_hierarches(test1))                 # удаление таблиц с связями, предварительно их нужно установить
+        # print('14', db.create_class(table='Cat',                 # создание модуля по таблице Cat с название (модуля) Cats
+        #                             module='Cats'))
+        # print('15', db.create_hierarchy(table='test1',           # cоздание модуля по иерархии таблиц
+        #                                 module='help_me'))
+        # print('16', db.save_hierarchy(test1))                    # создание иерархии таблиц по классам (предварительно нужно удалить)
         ...

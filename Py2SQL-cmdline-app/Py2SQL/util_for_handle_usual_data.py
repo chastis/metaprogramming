@@ -24,7 +24,7 @@ def serialize_to_py_object(title_columns: list, data: List[Tuple]) -> List[objec
     for row in data:
         new_object = Object()
         for field, value in zip(title_columns, row):
-            print(field, value)
+            # print(field, value)
             object.__setattr__(new_object,
                                field,
                                value)
@@ -99,3 +99,11 @@ def create_script_with_class(title_class: str, parent_class: str, class_: List[T
     with open(parent_class + '/' + title_class + '.py', 'w', encoding='utf8') as f:
         f.write(create_class(title=title_class,
                              data=class_))
+
+
+def get_children(class_: object, clases: list= []):
+    subclasses = class_.__subclasses__()
+    if subclasses:
+        for subclass in subclasses:
+            clases += get_children(subclass, clases + subclasses)
+    return clases
