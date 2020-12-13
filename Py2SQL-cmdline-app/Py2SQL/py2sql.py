@@ -257,18 +257,18 @@ class Database:
         else:
             raise Exception(EXCEPTION_TEXT_NO_TABLE)
 
-    def create_class(self, table: str, module: str):
-        """
-            Создание модуля
-        :param table: название таблицы по которой создается модуль
-        :param module: название модуля / класса в нём создаваемого
-        :return:
-        """
-        if table.lower() in self.get_tables():
-            handler.create_module(title_class=module,
-                                  class_=self.get_table_info(table))
-        else:
-            raise Exception(EXCEPTION_TEXT_NO_TABLE)
+    # def create_class(self):
+    #     attributes = [x[1] for x in self.db_table_structure(table)]
+    #     class_name = table[:len(table) - 1] if table.lower().endswith('s') else table
+    #     class_name = class_name.lower().capitalize()
+    #
+    #     file_content = FileGenerator.get_python_class(class_name, attributes)
+    #     created = FileGenerator.create_class(module, file_content)
+    #
+    #     frame = inspect.stack()[1]
+    #     mod = inspect.getmodule(frame[0])
+    #     filename = mod.__file__
+    #     FileGenerator.import_module(filename, module, class_name, created)
 
 
 def main():
@@ -284,6 +284,5 @@ def main():
         # db.find_hierarches()
         # db.create_object('cat', '1')
         # db.create_objects('cat', 1, 2)
-        db.create_class('Cat', 'Cats')
 
 
