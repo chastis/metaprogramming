@@ -3,6 +3,10 @@ from typing import *
 import re
 
 from config import SUPPORTED_TYPES
+from os import mkdir
+from os.path import exists
+from importlib import import_module, reload
+from config import SUPPORTED_TYPES, REVERSE_SUPPORTED_TYPES
 
 class Object(object):
     """
@@ -60,3 +64,25 @@ def convert_python_types_in_sqlite_types(attributes: tuple) -> List[Tuple]:
                 type_in_db = field_type
             result.append((title_var, SUPPORTED_TYPES.get(type_in_db)))
     return result
+
+def create_class(title: str, data: List[Tuple]) -> str:
+    result = f'class {title}:\n    ' + '\n    '.join(row[1] + ': ' + REVERSE_SUPPORTED_TYPES.get(row[2]) for row in data) + '\n'
+    return result
+
+
+def create_module(title_class: str, class_: List[Tuple]):
+    """
+        Создание модуля и импорт его в глобальную видимость
+    :param title_class: название модуля и класса
+    :param class_: строение класса, а именно список с переменными, название и тип
+    :return:
+    """
+    if not exists(title_class):
+        mkdir(title_class)
+    path_to_new_script = title_class + '/' + title_class + '.py'
+    with open(title_class + '/__init__.py', 'w', encoding='utf8') as f:
+        f.write(f'from {title_class} import * ')
+    with open(path_to_new_script, 'w', encoding='utf8') as f:
+        f.write(create_class(title=title_class,
+                             data=class_))
+    reload(import_module(path_to_new_script.replace('/', '.')[:-3]))
