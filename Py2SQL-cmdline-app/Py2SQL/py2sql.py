@@ -17,14 +17,49 @@ from Py2SQL import sql_queries
 
 
 class Car:
-    # def __init__(self, color: str = 'RED', number: int = 5, title: str = "BMW"):
-    #     self.color = color
-    #     self.number = number
-    #     self.title = title
+    def __init__(self, color: str = 'RED', number: int = 5, title: str = "BMW"):
+        self.color = color
+        self.number = number
+        self.title = title
     color = str
     number = int
     title = str
 
+class Cat:
+    def __init__(self, id_=1, name='Барсик'):
+        self.id = id_
+        self.name = name
+    id = 1
+    name = 'барсик'
+
+    def save_object(self, py_object: object):
+        """
+            Сохранение объекта в базу данных
+        :param py_object: объект
+        :return: статус добавления, или же контролируемая ошибка
+        """
+        need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(attributes=tuple(vars(py_object).items()),
+                                                                                object_=True)
+        tables_list: tuple = self.get_tables()
+
+        for table in tables_list:
+
+            if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+
+                try:
+                    self._execute(queries=util.check_having_in_table(table=table,
+                                                                     id_=py_object.id))
+                    update: bool = bool(self._cursor.fetchone())
+                except AttributeError:
+                    raise Exception(EXCEPTION_TEXT_NO_ID)
+
+                self._commit(queries=util.generate_save_sql_query(table=table,
+                                                                  py_object=py_object,
+                                                                  update=update))
+                return RECORD_UPDATE if update else RECORD_INSERT
+
+        else:
+            raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
 
 class Database:
     def _set_constants(self):
@@ -281,8 +316,12 @@ def main():
         # print(db.get_table_info('asdasdasdasd'))
         # print(db.find_class(Car))
         # print(db.find_classes_by((('color', 'str'), ('number', 'int'), ('title', 'str'))))
-        # db.find_hierarches()
-        # db.create_object('cat', '1')
+        # print(db.find_hierarches())
+        # db.create_object(Cat, '1')
         # db.create_objects('cat', 1, 2)
-
+        # db.save_object(Car("BLACK", 20, 'RENO'))
+        # db.save_object(Cat(22, 'test'))
+        # db.save_class(Cat)
+        # db.delete_object(Cat())
+        # db.delete_class(py_class=Car)
 

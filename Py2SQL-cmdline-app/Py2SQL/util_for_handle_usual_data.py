@@ -44,7 +44,8 @@ def merge_field_info_with_value(fields_info: List[Tuple], data: List[Tuple]) -> 
     return result
 
 
-def convert_python_types_in_sqlite_types(attributes: tuple) -> List[Tuple]:
+def convert_python_types_in_sqlite_types(attributes: tuple,
+                                         object_: bool = False) -> List[Tuple]:
     """
         Вычленяем нужные поля, которые являются переменными, и их типы переводим в типы бд
     param attributes: нужные аттрибуты класса
@@ -52,6 +53,11 @@ def convert_python_types_in_sqlite_types(attributes: tuple) -> List[Tuple]:
     """
     result = []
     for title_var, field_type in attributes:
+
+        if object_:
+            field_type = str(type(field_type))
+
+
         if not title_var.startswith('_'):
             if field_type not in SUPPORTED_TYPES.keys():
                 type_in_db = re.search(pattern="\'[^\']*",
