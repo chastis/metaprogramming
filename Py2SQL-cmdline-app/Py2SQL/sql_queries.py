@@ -1,9 +1,10 @@
 GET_TABLES = """SELECT name 
                 FROM sqlite_master
                 WHERE type='table'
-                ORDER BY name;"""
+                ORDER BY name"""
 
-def get_table_info(table: str):
+
+def GET_TABLE_INFO(table: str):
     return 'SELECT cid, ' \
            '       name,' \
            '       type ' \
