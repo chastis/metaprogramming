@@ -1,6 +1,6 @@
 from typing import Tuple, List
 
-from config import EXCEPTION_TEXT_CLASS_NO_ID
+from .config import EXCEPTION_TEXT_CLASS_NO_ID
 
 
 def output_one_column(data: list) -> tuple:

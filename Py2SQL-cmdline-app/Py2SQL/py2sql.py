@@ -2,16 +2,15 @@
 
 """Py2SQL.py2sql: provides entry point main()."""
 
-__version__ = "0.2.2"
+__version__ = "0.2.9"
 
 import os
 import sqlite3
-import sys
 from typing import *
 
 import Py2SQL.util_for_db as util
 import Py2SQL.util_for_handle_usual_data as handler
-from config import *
+from .config import *
 from Py2SQL import sql_queries
 
 
