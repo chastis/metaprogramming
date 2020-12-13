@@ -3,7 +3,8 @@ GET_TABLES = """SELECT name
                 WHERE type='table'
                 ORDER BY name;"""
 
-def get_table_info(table: str):
+
+def GET_TABLE_INFO(table: str):
     return 'SELECT cid, ' \
            '       name,' \
            '       type ' \

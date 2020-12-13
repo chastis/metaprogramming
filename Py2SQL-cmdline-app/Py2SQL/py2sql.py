@@ -11,8 +11,17 @@ import sys
 from typing import *
 
 import Py2SQL.util_for_db as util
+import Py2SQL.util_for_handle_usual_data as handler
 from config import *
 from Py2SQL import sql_queries
+
+
+class Car:
+    def __init__(self, color: str = 'RED', number: int = 5, title: str = "BMW"):
+        self.color = color
+        self.number = number
+        self.title = title
+
 
 class Database:
     def _set_constants(self):
@@ -51,13 +60,13 @@ class Database:
 
         self._db_disconnect()
 
-    def __del__(self):
-        """
-        Реализация деструктора, удаление курсора и коннекшина.
-        :return:
-        """
-
-        self._db_disconnect()
+    # def __del__(self):
+    #     """
+    #     Реализация деструктора, удаление курсора и коннекшина.
+    #     :return:
+    #     """
+    #
+    #     self._db_disconnect()
 
     def _db_connect(self):
         """
@@ -77,6 +86,13 @@ class Database:
     def _db_get_size(self) -> int:
         return os.path.getsize(filename=DB_FILENAME) / (1024 ** 2) if os.path.exists(DB_FILENAME) else 0
 
+    def _execute(self, queries: Union[Tuple, List, Set, FrozenSet, str, None]):
+        if isinstance(queries, str):
+            queries = (queries,)
+
+        for query in queries:
+            self._cursor.execute(query)
+
     def _commit(self, queries: Union[Tuple, List, Set, FrozenSet, str, None]):
         """
         Функция для закрепления транзакции, для уменьшения количества строк кода.
@@ -91,20 +107,65 @@ class Database:
 
             for query in queries:
                 self._cursor.execute(query)
+            self._execute(queries=queries)
         self._connect.commit()
 
-        def get_tables(self) -> tuple:
-            self._cursor.execute(sql_queries.GET_TABLES)
-            return util.output_one_column(data=self._cursor.fetchall())
+    def get_tables(self) -> tuple:
+        self._cursor.execute(sql_queries.GET_TABLES)
+        return util.output_one_column(data=self._cursor.fetchall())
 
-        def get_table_info(self, table: str) -> list:
-            self._cursor.execute(sql_queries.get_table_info(table=table))
-            # return util.table_info(title_columns=self._cursor.description,
-            #                        data=self._cursor.fetchall())
-            return self._cursor.fetchall()
+    def get_table_info(self, table: str) -> list:
+        """
+        :param table: название таблицы в БД
+        :return: список параметров таблицы: айди_поля, название_поля, тип_поля.
+        """
+        self._cursor.execute(sql_queries.GET_TABLE_INFO(table=table))
+        # return util.table_info(title_columns=self._cursor.description,
+        #                        data=self._cursor.fetchall())
+        return self._cursor.fetchall()
+
+    def find_object(self, table: str, py_object: object) -> list:
+        """
+            Поиск строки с эквивалетными параметрами что и у объекта
+        :param table: название таблицы
+        :param py_object: объект требуемый к нахождению
+        :return: список кортежей где 1 кортеж является информацией о одном поле
+        """
+        if table in self.get_tables():
+            query: str = util.generate_sql_to_find_object(table=table,
+                                                          attributes=tuple(py_object.__dict__.items()))
+            table_fields: List[Tuple] = self.get_table_info(table=table)
+            self._execute(queries=query)
+            return handler.merge_field_info_with_value(fields_info=table_fields,
+                                                       data=self._cursor.fetchall())
+
+        else:
+            raise Exception('Введенной таблицы не найдено.')
+
+    def find_objects_by(self, table: str, *attributes):
+        """
+            Поиск записи по заданным параметрам
+        :param table: название таблицы
+        :param attributes: нужный параметры для поиска
+        :return: найденные строки в формате: название стобца, тип, занчение
+        """
+        if table in self.get_tables():
+            query: str = util.generate_sql_to_find_object(table=table,
+                                                          attributes=tuple(attributes)[0])
+            table_fields: List[Tuple] = self.get_table_info(table=table)
+            self._execute(queries=query)
+            return handler.merge_field_info_with_value(fields_info=table_fields,
+                                                       data=self._cursor.fetchall())
+        else:
+            raise Exception('Введенной таблицы не найдено.')
+
+    def find_class(self, py_class):
+        pass
 
 
 def main():
     print("Executing Py2SQL version %s." % __version__)
     with Database() as db:
-        print(db.get_table_info('asdasdasdasd'))
+        print(db.find_objects_by('car', (("color", "RED"), ("number", 5))))
+        # print(db.find_object('car', Car()))
+        # print(db.get_table_info('asdasdasdasd'))
