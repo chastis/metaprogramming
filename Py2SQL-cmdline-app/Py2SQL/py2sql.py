@@ -60,6 +60,30 @@ class Cat:
 
         else:
             raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
+        
+    def save_class(self, py_class):
+        """
+            Сохранение таблицы в БД
+        :param py_class: класс, по которому будет выстроена бд
+        :return: статус сохранения или контролируемая ошибка
+        """
+        need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(attributes=tuple(vars(py_class).items()),
+                                                                                object_=True)
+        tables_list: tuple = self.get_tables()
+        title_class: str = py_class.__name__.lower()
+        if title_class not in tables_list:
+            self._commit(queries=util.create_table(title=title_class,
+                                                   attributes=need_fields))
+            return TABLE_WAS_CREATED
+        else:
+            for table in tables_list:
+                if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+                    raise Exception(EXCEPTION_TEXT_CLASS_EXIST)
+            else:
+                self._execute(sql_queries.DROP_TABLE(title_class))
+                self._commit(queries=util.create_table(title=title_class,
+                                                       attributes=need_fields))
+                return TABLE_WAS_UPDATED
 
 class Database:
     def _set_constants(self):
