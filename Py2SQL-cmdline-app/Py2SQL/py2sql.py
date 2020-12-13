@@ -154,7 +154,7 @@ class Database:
         if table in self.get_tables():
             return self._get_data_from_table(table=table, attributes=tuple(vars(py_object).items()))
         else:
-            raise Exception('Введенной таблицы не найдено.')
+            raise Exception(EXCEPTION_TEXT_NO_TABLE)
 
     def find_objects_by(self, table: str, *attributes):
         """
@@ -166,7 +166,7 @@ class Database:
         if table in self.get_tables():
             return self._get_data_from_table(table=table, attributes=tuple(attributes)[0])
         else:
-            raise Exception('Введенной таблицы не найдено.')
+            raise Exception(EXCEPTION_TEXT_NO_TABLE)
 
     def find_class(self, py_class):
         """
@@ -174,21 +174,38 @@ class Database:
                 :param py_class: python класс
                 :return: все данные найденого класса по ячейкам
                 """
-        need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(class_=py_class)
+        need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(attributes=tuple(vars(py_class).items()))
         tables_list: tuple = self.get_tables()
         for table in tables_list:
             if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
                 return self._get_data_from_table(table=table, attributes=tuple())
         else:
-            raise Exception('Таблицы с эквивалетными параметрами не найдено.')
+            raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
+
+    def find_classes_by(self, *attributes):
+        """
+            Поиск необходимого класса по введенным аттрибутам
+        :param py_class: python класс
+        :return: все данные найденого класса по ячейкам
+        """
+        need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(attributes=tuple(attributes)[0])
+        tables_list: tuple = self.get_tables()
+        for table in tables_list:
+            if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+                return self._get_data_from_table(table=table, attributes=tuple())
+        else:
+            raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
 
 
 def main():
     print("Executing Py2SQL version %s." % __version__)
     with Database() as db:
-        print(db.find_class(Car))
+        # print(db.get_table_info('asdasdasdasd'))
         # print(db.find_objects_by('car', (("color", "RED"), ("number", 5))))
         # print(db.find_object('car', Car()))
+        print(db.find_class(Car))
         # print(db.get_table_info('asdasdasdasd'))
+        # print(db.find_class(Car))
+        # print(db.find_classes_by((('color', 'str'), ('number', 'int'), ('title', 'str'))))
 
 
