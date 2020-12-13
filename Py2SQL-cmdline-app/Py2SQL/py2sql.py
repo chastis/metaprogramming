@@ -196,6 +196,80 @@ class Database:
         else:
             raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
 
+    def find_hierarches(self):
+        """
+            Поиск каких-либо иерархий, или же связанных таблиц
+        :return: список кортежей с форматом: родительская таблица, дочерняя таблица.
+        """
+        tables_list: tuple = self.get_tables()
+        relations: list = []
+
+        for table in tables_list:
+            query: str = sql_queries.GET_RELATIONS(table)
+
+            self._execute(queries=query)
+
+            if constraint := self._cursor.fetchone():
+                parent_table: str = constraint[0]
+                relations.append((parent_table, table))
+
+        return relations
+
+    def create_object(self, table: str, id_: Union[str, int]) -> object:
+        """
+            Создание объектов из одной записи
+        :param table: название таблицы
+        :param id_: запись в бд
+        :return: список объектов
+        """
+        if table in self.get_tables():
+            query: str = util.generate_sql_to_find_object(table=table,
+                                                          attributes=(('id', id_),))
+            self._execute(queries=query)
+            if record := self._cursor.fetchone():
+                return handler.serialize_to_py_object(title_columns=util.output_one_column(self._cursor.description),
+                                                      data=[record])
+            else:
+                raise Exception(EXCEPTION_TEXT_NO_RECORD)
+
+        else:
+            raise Exception(EXCEPTION_TEXT_NO_TABLE)
+
+    def create_objects(self, table: str, fid: Union[str, int], lid: Union[str, int]) -> List[object]:
+        """
+            Создание объектов из нескольки записей
+        :param lid: правая граница множества
+        :param fid: левая граница множества
+        :param table: название таблицы
+        :return: список объектов
+        """
+        if table in self.get_tables():
+            query: str = util.generate_sql_to_find_object(table=table,
+                                                          attributes=(('id', f' >= "{fid}'),
+                                                                      ('id', f' <= "{lid}')))
+            self._execute(queries=query)
+            if record := self._cursor.fetchall():
+                return handler.serialize_to_py_object(title_columns=util.output_one_column(self._cursor.description),
+                                                      data=record)
+            else:
+                raise Exception(EXCEPTION_TEXT_NO_RECORD)
+
+        else:
+            raise Exception(EXCEPTION_TEXT_NO_TABLE)
+
+    # def create_class(self):
+    #     attributes = [x[1] for x in self.db_table_structure(table)]
+    #     class_name = table[:len(table) - 1] if table.lower().endswith('s') else table
+    #     class_name = class_name.lower().capitalize()
+    #
+    #     file_content = FileGenerator.get_python_class(class_name, attributes)
+    #     created = FileGenerator.create_class(module, file_content)
+    #
+    #     frame = inspect.stack()[1]
+    #     mod = inspect.getmodule(frame[0])
+    #     filename = mod.__file__
+    #     FileGenerator.import_module(filename, module, class_name, created)
+
 
 def main():
     print("Executing Py2SQL version %s." % __version__)
@@ -207,5 +281,8 @@ def main():
         # print(db.get_table_info('asdasdasdasd'))
         # print(db.find_class(Car))
         # print(db.find_classes_by((('color', 'str'), ('number', 'int'), ('title', 'str'))))
+        # db.find_hierarches()
+        # db.create_object('cat', '1')
+        # db.create_objects('cat', 1, 2)
 
 

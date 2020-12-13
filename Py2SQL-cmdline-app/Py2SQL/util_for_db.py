@@ -22,5 +22,8 @@ def generate_sql_to_find_object(table: str, attributes: tuple):
         return query[:-6]
     else:
         for field, value in attributes:
-            query += f'{field} = "{value}" AND '
+            if '>' in value or '<' in value:
+                query += f'{field} {value}" AND '
+            else:
+                query += f'{field} = "{value}" AND '
         return query[:-4]
