@@ -2,7 +2,7 @@
 
 """Py2SQL.py2sql: provides entry point main()."""
 
-__version__ = "0.2.9"
+__version__ = "0.3.0"
 
 import os
 import sqlite3
@@ -10,7 +10,7 @@ from typing import *
 
 import Py2SQL.util_for_db as util
 import Py2SQL.util_for_handle_usual_data as handler
-from .config import *
+from Py2SQL.config import *
 from Py2SQL import sql_queries
 
 
@@ -27,7 +27,7 @@ from Py2SQL import sql_queries
 #
 # class Garage:
 #     id_ = 1
-#     car: Car
+#     Py2SQL.htmlcar: Car
 #     def __init__(self, id_: int, car: Car):
 #         self.id = id_
 #         self.car = car
@@ -495,8 +495,5 @@ def main():
         print('8', db.create_objects('cat', 1, 2))                  # создание питоновских объектов из БД
         print('9', db.save_object(Cat(id_=12, name='Мурзик')))      # добавление или редактирование введенного объекта
         print('10', db.delete_object(Cat(id_=12, name='Мурзик')))   # удаление объекта по заданным параметрам
-
         print('11', db.delete_hierarches(test1))                    # удаление таблиц с связями, предварительно их нужно установить
-        print('12', db.create_class(table='Cat', module='Cats'))    # создание модуля по таблице Cat с название (модуля) Cats
-
-        print('13', db.save_hierarchy(test1))                       # создание иерархии таблиц по классам (предварительно нужно удалить)
+        print('12', db.save_hierarchy(test1))                       # создание иерархии таблиц по классам (предварительно нужно удалить)
