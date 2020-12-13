@@ -116,6 +116,24 @@ class Cat:
         else:
             raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
 
+    def delete_class(self, py_class):
+        """
+            Удаление таблицы из БД
+        :param py_class: класс, по которому будет удалена бд
+        :return: статус удаления или контролируемая ошибка
+        """
+        need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(attributes=tuple(vars(py_class).items()))
+        tables_list: tuple = self.get_tables()
+        title_class: str = py_class.__name__.lower()
+        if title_class not in tables_list:
+            raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
+        else:
+            for table in tables_list:
+                if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+                    self._commit(queries=util.delete_class(table=table))
+                    return TABLE_WAS_DELETED
+            else:
+                raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
 
 class Database:
     def _set_constants(self):
