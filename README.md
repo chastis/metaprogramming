@@ -12,6 +12,10 @@ Now you can write to the terminal:
 
 Py2SQL
 
+### Warning
+
+You should locate file db.sqlite3 in the same directory where you run cmd line app
+
 ### Distribution of duties
 
 | Author | Tasks | 
