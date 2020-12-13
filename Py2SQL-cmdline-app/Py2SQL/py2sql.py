@@ -2,7 +2,7 @@
 
 """Py2SQL.py2sql: provides entry point main()."""
 
-__version__ = "0.2.0"
+__version__ = "0.2.2"
 
 import os
 import sqlite3
@@ -38,6 +38,7 @@ from Py2SQL import sql_queries
 class Lesson:
     id = 1
     title = 'Математика'
+
     def __init__(self, id_, title):
         self.id = id_
         self.title = title
@@ -480,28 +481,23 @@ class Database:
 
 
 def main():
-    print("Executing bootstrap version %s." % __version__)
-    print("List of argument strings: %s" % sys.argv[1:])
+    print("Executing Py2SQL version %s." % __version__)
+
     with Database() as db:
-        # print('1', db.get_table_info('asdasdasdasd'))          # получение информации о таблице
-        # print('2', db.find_objects_by('cat',                     # нахождение объектов по атрибутам
-        #                          (("name", "Бузик"), )))
-        # print('3', db.find_object('cat', Cat()))                 # поиск по объекту в БД
-        # print('4', db.find_class(Cat))                           # поиск класса по объекту
-        # print('5', db.find_classes_by((('name', 'str'),          # поиск класса по параметрам, название : тип
-        #                           ('id', 'int'), )))
-        # print('6', db.find_hierarches())                         # поиск связанных таблиц
-        # print('7', db.create_object('Cat', '1'))                 # создание питоновского ОДНОГО объекта
-        # print('8', db.create_objects('cat', 1, 2))               # создание питоновских объектов из БД
-        # print('9', db.save_object(Cat(id_=12, name='Мурзик')))   # добавление или редактирование введенного объекта
-        # print('10', db.save_class(Lesson))                       # перед приминением удалить класс из БД
-        # print('11', db.delete_object(Cat(id_=12,                   # удаление объекта по заданным параметрам
-        #                                  name='Мурзик')))
-        # print('12', db.delete_class(py_class=test3))             # удаление таблицы из БД
-        # print('13', db.delete_hierarches(test1))                 # удаление таблиц с связями, предварительно их нужно установить
-        # print('14', db.create_class(table='Cat',                 # создание модуля по таблице Cat с название (модуля) Cats
-        #                             module='Cats'))
-        # print('15', db.create_hierarchy(table='test1',           # cоздание модуля по иерархии таблиц
-        #                                 module='help_me'))
-        # print('16', db.save_hierarchy(test1))                    # создание иерархии таблиц по классам (предварительно нужно удалить)
-        ...
+        print('1', db.get_table_info('asdasdasdasd'))               # получение информации о таблице
+        print('2', db.find_objects_by('cat',                        # нахождение объектов по атрибутам
+                                 (("name", "Бузик"), )))
+        print('3', db.find_object('cat', Cat()))                    # поиск по объекту в БД
+        print('4', db.find_class(Cat))                              # поиск класса по объекту
+        print('5', db.find_classes_by((('name', 'str'),             # поиск класса по параметрам, название : тип
+                                  ('id', 'int'), )))
+        print('6', db.find_hierarches())                            # поиск связанных таблиц
+        print('7', db.create_object('Cat', '1'))                    # создание питоновского ОДНОГО объекта
+        print('8', db.create_objects('cat', 1, 2))                  # создание питоновских объектов из БД
+        print('9', db.save_object(Cat(id_=12, name='Мурзик')))      # добавление или редактирование введенного объекта
+        print('10', db.delete_object(Cat(id_=12, name='Мурзик')))   # удаление объекта по заданным параметрам
+
+        print('11', db.delete_hierarches(test1))                    # удаление таблиц с связями, предварительно их нужно установить
+        print('12', db.create_class(table='Cat', module='Cats'))    # создание модуля по таблице Cat с название (модуля) Cats
+
+        print('13', db.save_hierarchy(test1))                       # создание иерархии таблиц по классам (предварительно нужно удалить)
