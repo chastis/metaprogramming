@@ -6,3 +6,4 @@ SUPPORTED_TYPES = {'str': 'TEXT',
 
 EXCEPTION_TEXT_NO_TABLE = 'Введенной таблицы не найдено.'
 EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS = 'Таблицы с эквивалетными параметрами не найдено.'
+EXCEPTION_TEXT_NO_RECORD = 'Запись с заданными параметрами не найдена.'
