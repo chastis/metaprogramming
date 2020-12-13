@@ -14,7 +14,7 @@ Py2SQL
 
 ### Warning
 
-You should locate db.sqlite3 in the same directory where you run cmd line app
+You should locate file db.sqlite3 in the same directory where you run cmd line app
 
 ### Distribution of duties
 
