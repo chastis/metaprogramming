@@ -3,7 +3,7 @@ import re
 from os import mkdir
 from os.path import exists
 from importlib import import_module, reload
-from config import SUPPORTED_TYPES, REVERSE_SUPPORTED_TYPES
+from Py2SQL.config import SUPPORTED_TYPES, REVERSE_SUPPORTED_TYPES
 
 
 class Object(object):
