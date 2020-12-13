@@ -32,6 +32,8 @@ class Cat:
     id = 1
     name = 'барсик'
 
+class Database:
+
     def save_object(self, py_object: object):
         """
             Сохранение объекта в базу данных
@@ -135,7 +137,6 @@ class Cat:
             else:
                 raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
 
-class Database:
     def _set_constants(self):
         """
          Устанавливаем в классовые переменные инфу о базе и версии используемого API.
