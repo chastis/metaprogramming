@@ -11,7 +11,6 @@ import sys
 from typing import *
 from config import *
 
-
 class Database:
     def _set_constants(self):
         """
