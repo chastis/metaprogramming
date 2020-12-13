@@ -93,7 +93,18 @@ class Database:
                 self._cursor.execute(query)
         self._connect.commit()
 
+        def get_tables(self) -> tuple:
+            self._cursor.execute(sql_queries.GET_TABLES)
+            return util.output_one_column(data=self._cursor.fetchall())
+
+        def get_table_info(self, table: str) -> list:
+            self._cursor.execute(sql_queries.get_table_info(table=table))
+            # return util.table_info(title_columns=self._cursor.description,
+            #                        data=self._cursor.fetchall())
+            return self._cursor.fetchall()
+
 
 def main():
     print("Executing Py2SQL version %s." % __version__)
-    Database()
+    with Database() as db:
+        print(db.get_table_info('asdasdasdasd'))
