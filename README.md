@@ -2,7 +2,7 @@
 
 ### Installing Cmd Utility
 
-If you want to use this program, you should download command line utility cmdline-ruby-formatter
+If you want to use this program, you should download command line utility
 
 For establishing you need to write in your terminal:
 
