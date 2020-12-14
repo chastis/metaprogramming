@@ -149,6 +149,13 @@ Data and other attributes defined here:<br>
 
 <dl><dt><a name="Database-get_tables"><strong>get_tables</strong></a>(self) -&gt; tuple</dt><dd><tt>:return:&nbsp;Названия&nbsp;имеющихся&nbsp;таблиц</tt></dd></dl>
 
+<dl><dt><a name="Database-group_by"><strong>group_by</strong></a>(self, table, *attributes, group_by: list = [], count_field: str = '')</dt><dd><tt>&nbsp;&nbsp;&nbsp;&nbsp;Производит&nbsp;поиск&nbsp;объектов&nbsp;и&nbsp;их&nbsp;группировку&nbsp;+&nbsp;подсчёт.<br>
+:param&nbsp;table:<br>
+:param&nbsp;attributes:<br>
+:param&nbsp;group_by:<br>
+:param&nbsp;count_field:<br>
+:return:</tt></dd></dl>
+
 <dl><dt><a name="Database-save_class"><strong>save_class</strong></a>(self, py_class)</dt><dd><tt>&nbsp;&nbsp;&nbsp;&nbsp;Сохранение&nbsp;таблицы&nbsp;в&nbsp;БД<br>
 :param&nbsp;py_class:&nbsp;класс,&nbsp;по&nbsp;которому&nbsp;будет&nbsp;выстроена&nbsp;бд<br>
 :return:&nbsp;статус&nbsp;сохранения&nbsp;или&nbsp;контролируемая&nbsp;ошибка</tt></dd></dl>
@@ -303,6 +310,7 @@ Data descriptors inherited from <a href="py2sql.html#test1">test1</a>:<br>
 <strong>EXCEPTION_TEXT_NO_RECORD</strong> = 'Запись с заданными параметрами не найдена.'<br>
 <strong>EXCEPTION_TEXT_NO_TABLE</strong> = 'Введенной таблицы не найдено.'<br>
 <strong>EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS</strong> = 'Таблицы с эквивалетными параметрами не найдено.'<br>
+<strong>EXCEPTION_TEXT_UNCORRECTED_PARAMS</strong> = 'Ошибка исполнения запроса, проверьте пожалуйста входные данные.<font color="#c040c0">\n</font>Сам запрос: '<br>
 <strong>Final</strong> = typing.Final<br>
 <strong>FrozenSet</strong> = typing.FrozenSet<br>
 <strong>Generator</strong> = typing.Generator<br>

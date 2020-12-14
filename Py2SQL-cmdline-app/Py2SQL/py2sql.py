@@ -97,13 +97,6 @@ class Database:
         """
         self._db_disconnect()
 
-    # def __del__(self):
-    #     """
-    #         Реализация деструктора, удаление курсора и коннекшина.
-    #     :return:
-    #     """
-    #     self._db_disconnect()
-
     def _db_connect(self):
         """
             Установка подключения
@@ -145,7 +138,7 @@ class Database:
         :return: Названия имеющихся таблиц
         """
         self._cursor.execute(sql_queries.GET_TABLES)
-        return util.output_one_column(data=self._cursor.fetchall())
+        return tuple(table.lower() for table in util.output_one_column(data=self._cursor.fetchall()))
 
     def get_table_info(self, table: str) -> list:
         """
@@ -478,6 +471,32 @@ class Database:
 
         return deleted_relations
 
+    def group_by(self, table, *attributes, group_by: list = [], count_field: str = ''):
+        """
+            Производит поиск объектов и их группировку + подсчёт.
+        :param table:
+        :param attributes:
+        :param group_by:
+        :param count_field:
+        :return:
+        """
+        query: str = util.generate_sql_to_find_object_with_group_by(table=table,
+                                                                    attributes=attributes,
+                                                                    group_by=group_by,
+                                                                    count_field=count_field)
+        table_fields: List[Tuple] = self.get_table_info(table=table)
+        if count_field:
+            index_count_row: int = table_fields[-1][0] + 1
+            table_fields.append((index_count_row,
+                                 'count_function',
+                                 'INTEGER'))
+        try:
+            self._execute(queries=query)
+        except sqlite3.OperationalError:
+            raise Exception(EXCEPTION_TEXT_UNCORRECTED_PARAMS + query)
+        return {"result": handler.merge_field_info_with_value(fields_info=table_fields,
+                                                              data=self._cursor.fetchall())}
+
 
 def main():
     print("Executing Py2SQL version %s." % __version__)
@@ -497,3 +516,6 @@ def main():
         print('10', db.delete_object(Cat(id_=12, name='Мурзик')))   # удаление объекта по заданным параметрам
         print('11', db.delete_hierarches(test1))                    # удаление таблиц с связями, предварительно их нужно установить
         print('12', db.save_hierarchy(test1))                       # создание иерархии таблиц по классам (предварительно нужно удалить)
+        # print('17', db.group_by(table='People',
+        #                         group_by=["group_people"],
+        #                         count_field="group_people",))     # группировка объектов , также доступен аргумент attrs, вписывать после table в формате List[Tuple]
