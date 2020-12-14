@@ -20,6 +20,12 @@ def table_info(title_columns: tuple, data: list) -> list:
 
 
 def generate_sql_to_find_object(table: str, attributes: tuple) -> str:
+    """
+        Генерация sql запроса для поиска объектов
+    :param table: название необходимой таблицы
+    :param attributes: параметры для поиска необходимых записей
+    :return: готовый sql запрос
+    """
     query: str = 'SELECT * ' \
                  f'FROM `{table}` ' \
                  f'WHERE '
@@ -35,6 +41,13 @@ def generate_sql_to_find_object(table: str, attributes: tuple) -> str:
 
 
 def generate_save_sql_query(table: str, py_object: object, update: bool = False) -> str:
+    """
+        Генерация sql запроса на сохранение данных
+    :param table: необходимая таблица в которую будет происходить сохранение
+    :param py_object: нужный объект
+    :param update: апдейт или инсерт
+    :return: готовый sql запрос
+    """
     if update:
         query: str = f'UPDATE `{table}`' \
                      f'SET ' + '", '.join(title + ' = "' + str(value) for title, value in vars(py_object).items()) + \
@@ -122,4 +135,33 @@ def create_table_with_relation(title: str, attributes: List[Tuple], parents: lis
                      ', '.join(f'"{title_row}" {type_}' for title_row, type_ in attributes) + \
                      f', PRIMARY KEY("id" AUTOINCREMENT)' \
                      ')'
+    return query
+
+
+def generate_sql_to_find_object_with_group_by(table: str, attributes: tuple, group_by: list, count_field: str) -> str:
+    """
+        Генерация запроса с group by и count.
+    :param table: название нужной таблицы
+    :param attributes: обычные параметры отбора записей
+    :param group_by: список по каким параметрам групировать
+    :param count_field: название столбца который нужно посчитать
+    :return: готовый sql запрос
+    """
+    count_column: str = f', COUNT("{count_field}")' if count_field else ''
+    query: str = 'SELECT * ' \
+                 f'      {count_column} ' \
+                 f'FROM `{table}` ' \
+                 f'WHERE '
+    if not attributes:
+        query = query[:-3]
+    else:
+        for field, value in attributes:
+            if isinstance(value, str) and ('>' in value or '<' in value):
+                query += f'{field} {value}" AND '
+            else:
+                query += f'{field} = "{value}" AND '
+
+    query = query[:-3]
+    if group_by:
+        query += f'GROUP BY `{"`, `".join(group_by)}` '
     return query
