@@ -34,6 +34,7 @@ You should locate file db.sqlite3 in the same directory where you run cmd line a
 | | Py2SQL.save_class(class)|
 | | Py2SQL.delete_object(object)|
 | | Py2SQL.delete_class|
+| | Py2SQL.group_by|
 | Danial | Py2SQL.db_name |
 | | Py2SQL.db_tables |
 | | Py2SQL.find_object(table, py_object) |
