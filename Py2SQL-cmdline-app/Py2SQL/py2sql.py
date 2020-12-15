@@ -140,6 +140,33 @@ class Database:
         self._cursor.execute(sql_queries.GET_TABLES)
         return tuple(table.lower() for table in util.output_one_column(data=self._cursor.fetchall()))
 
+    def db_table_structure(self, table: str) -> list:
+        """
+            Получаем структуру таблицы в виде списка из кортежей структура которы
+            id, name, type;
+        :param table:
+        :return:
+        """
+        return self.get_table_info(table=table)
+
+    def db_table_size(self, table: str) -> int:
+        """
+            Возвращает примерный размер таблицы в byte;
+            примерный потому что посчитан прописанными методами а не выведеные с помощью
+            какой-либо утилиты базы данных
+        :param table: название таблицы
+        :return: число, равняющееся приблизтельному размеру базы данных
+        """
+        result_size: int = 0
+        INT_SIZE: int = 8
+        for cell in self._get_data_from_table(table, ()):
+            if cell[1] in ('INTEGER', 'FLOAT'):
+                result_size += INT_SIZE
+            else:
+                result_size += len(cell[2]) * 2
+
+        return result_size
+    
     def get_table_info(self, table: str) -> list:
         """
         :param table: название таблицы в БД
