@@ -6,7 +6,7 @@ If you want to use this program, you should download command line utility
 
 For establishing you need to write in your terminal:
 
-pip install cmdline-Py2SQL=="0.3.0"
+pip install cmdline-Py2SQL=="0.3.1"
 
 Now you can write to the terminal:
 

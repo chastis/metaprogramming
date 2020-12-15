@@ -169,6 +169,24 @@ class Database:
         #                        data=self._cursor.fetchall())
         return self._cursor.fetchall()
 
+    def db_table_size(self, table: str) -> int:
+        """
+            Возвращает примерный размер таблицы в byte;
+            примерный потому что посчитан прописанными методами а не выведеные с помощью
+            какой-либо утилиты базы данных
+        :param table: название таблицы
+        :return: число, равняющееся приблизтельному размеру базы данных
+        """
+        result_size: int = 0
+        INT_SIZE: int = 8
+        for cell in self._get_data_from_table(table, ()):
+            if cell[1] in ('INTEGER', 'FLOAT'):
+                result_size += INT_SIZE
+            else:
+                result_size += len(cell[2]) * 2
+
+        return result_size
+
     def _get_data_from_table(self, table: str, attributes: Union[list, tuple, None]) -> List[Tuple]:
         """
             Данный метод создан для уменьшения кол-ва кода, он:
@@ -509,3 +527,4 @@ def main():
         print('10', db.delete_object(Cat(id_=12, name='Мурзик')))   # удаление объекта по заданным параметрам
         print('11', db.delete_hierarches(test1))                    # удаление таблиц с связями, предварительно их нужно установить
         print('12', db.save_hierarchy(test1))                       # создание иерархии таблиц по классам (предварительно нужно удалить)
+        print('13', db.db_table_size('Cat'))
