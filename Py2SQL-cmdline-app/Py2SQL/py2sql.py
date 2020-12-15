@@ -72,7 +72,7 @@ class Database:
         self._db_version: str = sqlite3.version
         self._db_sqlite_version: str = sqlite3.sqlite_version
         self._db_engine: str = 'SQLite3: ' + self._db_version
-        self._db_size: int = self._db_get_size()
+        self._db_size: int = self.db_get_size()
 
     def __init__(self):
         """
@@ -80,7 +80,7 @@ class Database:
         """
         self._set_constants()
 
-        self._connect: sqlite3.Connection = self._db_connect()
+        self._connect: sqlite3.Connection = self.db_connect()
         self._cursor: sqlite3.Cursor = self._connect.cursor()
 
     def __enter__(self):
@@ -95,7 +95,7 @@ class Database:
             Реализовано для менеджера контекста (with as)
         :return:
         """
-        self._db_disconnect()
+        self.db_disconnect()
 
     # def __del__(self):
     #     """
@@ -104,14 +104,14 @@ class Database:
     #     """
     #     self._db_disconnect()
 
-    def _db_connect(self):
+    def db_connect(self):
         """
             Установка подключения
         :return: sqlite3.Connection или же объект подключения
         """
         return sqlite3.connect(database=DB_FILENAME)
 
-    def _db_disconnect(self):
+    def db_disconnect(self):
         """
             Закрываем подключение и все курсоры.
         :return:
@@ -119,7 +119,7 @@ class Database:
         self._cursor.close()
         self._connect.close()
 
-    def _db_get_size(self) -> int:
+    def db_get_size(self) -> int:
         return os.path.getsize(filename=DB_FILENAME) / (1024 ** 2) if os.path.exists(DB_FILENAME) else 0
 
     def _execute(self, queries: Union[Tuple, List, Set, FrozenSet, str, None]):
@@ -129,7 +129,7 @@ class Database:
         for query in queries:
             self._cursor.execute(query)
 
-    def _commit(self, queries: Union[Tuple, List, Set, FrozenSet, str, None]):
+    def commit(self, queries: Union[Tuple, List, Set, FrozenSet, str, None]):
         """
             Функция для закрепления транзакции, для уменьшения количества строк кода.
         :param queries: запросы, может быть как один запрос в виде строки,
@@ -140,6 +140,18 @@ class Database:
             self._execute(queries=queries)
         self._connect.commit()
 
+    def db_get_name(self) -> str:
+        """
+        :return: Название БД
+        """
+        return self._db_name
+
+    def db_get_engine(self) -> str:
+        """
+        :return: Engine БД
+        """
+        return self._db_engine
+    
     def get_tables(self) -> tuple:
         """
         :return: Названия имеющихся таблиц
@@ -147,7 +159,7 @@ class Database:
         self._cursor.execute(sql_queries.GET_TABLES)
         return util.output_one_column(data=self._cursor.fetchall())
 
-    def get_table_info(self, table: str) -> list:
+    def get_table_structure(self, table: str) -> list:
         """
         :param table: название таблицы в БД
         :return: список параметров таблицы: айди_поля, название_поля, тип_поля.
@@ -169,7 +181,7 @@ class Database:
         """
         query: str = util.generate_sql_to_find_object(table=table,
                                                       attributes=attributes)
-        table_fields: List[Tuple] = self.get_table_info(table=table)
+        table_fields: List[Tuple] = self.get_table_structure(table=table)
         self._execute(queries=query)
         return handler.merge_field_info_with_value(fields_info=table_fields,
                                                    data=self._cursor.fetchall())
@@ -208,7 +220,7 @@ class Database:
                                                                                 object_=True)
         tables_list: tuple = self.get_tables()
         for table in tables_list:
-            if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+            if set(row[1:] for row in self.get_table_structure(table)) == set(need_fields):
                 return self._get_data_from_table(table=table, attributes=tuple())
         else:
             raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
@@ -222,7 +234,7 @@ class Database:
         need_fields: List[Tuple] = handler.convert_python_types_in_sqlite_types(attributes=tuple(attributes)[0])
         tables_list: tuple = self.get_tables()
         for table in tables_list:
-            if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+            if set(row[1:] for row in self.get_table_structure(table)) == set(need_fields):
                 return self._get_data_from_table(table=table, attributes=tuple())
         else:
             raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
@@ -297,7 +309,7 @@ class Database:
         """
         if table.lower() in self.get_tables():
             handler.create_module(title_class=table,
-                                  class_=self.get_table_info(table),
+                                  class_=self.get_table_structure(table),
                                   title_module=module)
             return MODULE_WAS_CREATED
         else:
@@ -314,7 +326,7 @@ class Database:
         if table.lower() in all_tables:
             handler.create_module(title_class=table,
                                   title_module=module,
-                                  class_=self.get_table_info(table))
+                                  class_=self.get_table_structure(table))
             for children_table in all_tables:
                 query: str = sql_queries.GET_RELATIONS(children_table)
 
@@ -324,7 +336,7 @@ class Database:
                     parent_table: str = relations[0]
                     handler.create_script_with_class(title_class=children_table,
                                                      parent_class=module,
-                                                     class_=self.get_table_info(children_table))
+                                                     class_=self.get_table_structure(children_table))
         else:
             raise Exception(EXCEPTION_TEXT_NO_TABLE)
         return HIERARH_WAS_CREATED_IN_PY
@@ -341,7 +353,7 @@ class Database:
 
         for table in tables_list:
 
-            if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+            if set(row[1:] for row in self.get_table_structure(table)) == set(need_fields):
 
                 try:
                     self._execute(queries=util.check_having_in_table(table=table,
@@ -350,7 +362,7 @@ class Database:
                 except AttributeError:
                     raise Exception(EXCEPTION_TEXT_NO_ID)
 
-                self._commit(queries=util.generate_save_sql_query(table=table,
+                self.commit(queries=util.generate_save_sql_query(table=table,
                                                                   py_object=py_object,
                                                                   update=update))
                 return RECORD_UPDATE if update else RECORD_INSERT
@@ -369,16 +381,16 @@ class Database:
         tables_list: tuple = self.get_tables()
         title_class: str = py_class.__name__.lower()
         if title_class not in tables_list:
-            self._commit(queries=util.create_table(title=title_class,
+            self.commit(queries=util.create_table(title=title_class,
                                                    attributes=need_fields))
             return TABLE_WAS_CREATED
         else:
             for table in tables_list:
-                if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+                if set(row[1:] for row in self.get_table_structure(table)) == set(need_fields):
                     raise Exception(EXCEPTION_TEXT_CLASS_EXIST)
             else:
                 self._execute(sql_queries.DROP_TABLE(title_class))
-                self._commit(queries=util.create_table(title=title_class,
+                self.commit(queries=util.create_table(title=title_class,
                                                        attributes=need_fields))
                 return TABLE_WAS_UPDATED
 
@@ -391,17 +403,17 @@ class Database:
             tables_list: tuple = self.get_tables()
             title_class: str = class_.__name__.lower()
             if title_class not in tables_list:
-                self._commit(queries=util.create_table_with_relation(title=title_class,
+                self.commit(queries=util.create_table_with_relation(title=title_class,
                                                                      attributes=need_fields,
                                                                      parents=class_.__bases__))
             else:
                 for table in tables_list:
-                    if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+                    if set(row[1:] for row in self.get_table_structure(table)) == set(need_fields):
                         continue
                         # raise Exception(EXCEPTION_TEXT_CLASS_EXIST)
                 else:
                     self._execute(sql_queries.DROP_TABLE(title_class))
-                    self._commit(queries=util.create_table(title=title_class,
+                    self.commit(queries=util.create_table(title=title_class,
                                                            attributes=need_fields))
         return HIERARH_WAS_CREATED
 
@@ -417,7 +429,7 @@ class Database:
 
         for table in tables_list:
 
-            if set(row[1:] for row in self.get_table_info(table)) == set(need_fields):
+            if set(row[1:] for row in self.get_table_structure(table)) == set(need_fields):
 
                 try:
                     self._execute(queries=util.check_having_in_table(table=table,
@@ -429,7 +441,7 @@ class Database:
                 except (IndexError, TypeError):
                     raise Exception(EXCEPTION_TEXT_NO_RECORD)
 
-                self._commit(queries=util.delete_object(table=table,
+                self.commit(queries=util.delete_object(table=table,
                                                         row_id=id_))
                 return RECORD_WAS_DELETED
 
@@ -450,8 +462,8 @@ class Database:
             raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
         else:
             for table in tables_list:
-                if set(row[1:] for row in self.get_table_info(table)) == set(need_fields) and table == title_class:
-                    self._commit(queries=util.delete_class(table=table))
+                if set(row[1:] for row in self.get_table_structure(table)) == set(need_fields) and table == title_class:
+                    self.commit(queries=util.delete_class(table=table))
                     return TABLE_WAS_DELETED
             else:
                 raise Exception(EXCEPTION_TEXT_NO_TABLE_WITH_THESE_ATTRS)
@@ -472,8 +484,8 @@ class Database:
             if constraint := self._cursor.fetchone():
                 parent_table: str = constraint[0]
                 if parent_table == root_class.__name__.lower():
-                    self._commit(queries=util.delete_class(table=table))
-                    self._commit(queries=util.delete_class(table=parent_table))
+                    self.commit(queries=util.delete_class(table=table))
+                    self.commit(queries=util.delete_class(table=parent_table))
                     deleted_relations.append((parent_table, table))
 
         return deleted_relations
@@ -483,7 +495,7 @@ def main():
     print("Executing Py2SQL version %s." % __version__)
 
     with Database() as db:
-        print('1', db.get_table_info('asdasdasdasd'))               # получение информации о таблице
+        print('1', db.get_table_structure('asdasdasdasd'))          # получение информации о таблице
         print('2', db.find_objects_by('cat',                        # нахождение объектов по атрибутам
                                  (("name", "Бузик"), )))
         print('3', db.find_object('cat', Cat()))                    # поиск по объекту в БД
