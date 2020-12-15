@@ -159,7 +159,7 @@ class Database:
         self._cursor.execute(sql_queries.GET_TABLES)
         return util.output_one_column(data=self._cursor.fetchall())
 
-    def get_table_structure(self, table: str) -> list:
+    def get_table_info(self, table: str) -> list:
         """
         :param table: название таблицы в БД
         :return: список параметров таблицы: айди_поля, название_поля, тип_поля.
@@ -168,6 +168,15 @@ class Database:
         # return util.table_info(title_columns=self._cursor.description,
         #                        data=self._cursor.fetchall())
         return self._cursor.fetchall()
+
+    def db_table_structure(self, table: str) -> list:
+        """
+            Получаем структуру таблицы в виде списка из кортежей структура которы
+            id, name, type;
+        :param table:
+        :return:
+        """
+        return self.get_table_info(table=table)
 
     def _get_data_from_table(self, table: str, attributes: Union[list, tuple, None]) -> List[Tuple]:
         """
@@ -185,6 +194,7 @@ class Database:
         self._execute(queries=query)
         return handler.merge_field_info_with_value(fields_info=table_fields,
                                                    data=self._cursor.fetchall())
+
 
     def find_object(self, table: str, py_object: object) -> list:
         """
