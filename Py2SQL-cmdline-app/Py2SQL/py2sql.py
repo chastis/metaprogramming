@@ -159,7 +159,7 @@ class Database:
         self._cursor.execute(sql_queries.GET_TABLES)
         return util.output_one_column(data=self._cursor.fetchall())
 
-    def get_table_info(self, table: str) -> list:
+    def get_table_structure(self, table: str) -> list:
         """
         :param table: название таблицы в БД
         :return: список параметров таблицы: айди_поля, название_поля, тип_поля.
@@ -169,14 +169,23 @@ class Database:
         #                        data=self._cursor.fetchall())
         return self._cursor.fetchall()
 
-    def db_table_structure(self, table: str) -> list:
+    def db_table_size(self, table: str) -> int:
         """
-            Получаем структуру таблицы в виде списка из кортежей структура которы
-            id, name, type;
-        :param table:
-        :return:
+            Возвращает примерный размер таблицы в byte;
+            примерный потому что посчитан прописанными методами а не выведеные с помощью
+            какой-либо утилиты базы данных
+        :param table: название таблицы
+        :return: число, равняющееся приблизтельному размеру базы данных
         """
-        return self.get_table_info(table=table)
+        result_size: int = 0
+        INT_SIZE: int = 8
+        for cell in self._get_data_from_table(table, ()):
+            if cell[1] in ('INTEGER', 'FLOAT'):
+                result_size += INT_SIZE
+            else:
+                result_size += len(cell[2]) * 2
+
+        return result_size
 
     def _get_data_from_table(self, table: str, attributes: Union[list, tuple, None]) -> List[Tuple]:
         """
@@ -194,7 +203,6 @@ class Database:
         self._execute(queries=query)
         return handler.merge_field_info_with_value(fields_info=table_fields,
                                                    data=self._cursor.fetchall())
-
 
     def find_object(self, table: str, py_object: object) -> list:
         """
@@ -519,3 +527,4 @@ def main():
         print('10', db.delete_object(Cat(id_=12, name='Мурзик')))   # удаление объекта по заданным параметрам
         print('11', db.delete_hierarches(test1))                    # удаление таблиц с связями, предварительно их нужно установить
         print('12', db.save_hierarchy(test1))                       # создание иерархии таблиц по классам (предварительно нужно удалить)
+        print('13', db.db_table_size('Cat'))
